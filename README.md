@@ -1,5 +1,14 @@
 # UWTTA
+
 Coming soon...
+
+**UIKit**
+
+https://getuikit.com/docs/utility#box-shadow
+
+**Google Fonts**
+
+https://fonts.google.com
 
 **Rating Points Table**
 
