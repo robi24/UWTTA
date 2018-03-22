@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>UWTTA - Ready?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" media="screen" href="static/css/main.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+  <!-- UIkit CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.css" />
+</head>
+<body>
+  <div class="uk-container page" id="app">
+    <div uk-slideshow>
+        <ul class="uk-slideshow-items" uk-height-viewport>
+            <li>
+              <header class="rounded uk-card uk-card-default uk-padding-small">
+                <span class="uw-title">Recently Played</span>
+              </header>
+              <ul class="unordered-list history">
+                <template
+                  v-for="(record, recordIdx) in history"
+                >
+                  <li class="list-item date uk-text-small">{{record.date}}</li>
+                  <li
+                    class="list-item record uk-card uk-box-shadow-medium uk-padding-remove"
+                    :key="recordIdx"
+                  >
+                    <div
+                      v-for="idx in [0, 1]"
+                      :key="idx"
+                      class="row"
+                      :class="{ winner: record.winner === idx, ['p'+(idx+1)]: true }"
+                      >
+                      <span class="fill name">
+                        {{record.players[idx]}}
+                        <sup>{{(record.winner === idx) ? ('+'+record.points) : ('-'+ceil(record.points / 2))}}</sup>
+                      </span>
+                      <span v-if="record.type === 'game'" class="number score">{{record.scores[idx]}}</span>
+                      <div class="score-list" :style="{ width: (record.scores.length * 32) + 'px' }" v-else>
+                        <span
+                          v-for="(scores, gameIdx) in record.scores"
+                          :key="gameIdx"
+                          class="number score"
+                          :class="{ even: (gameIdx % 2 == 1)}">
+                          {{scores[idx]}}
+                        </span>
+                      </div>
+                      <span class="number result">{{record.result[idx]}}</span>
+                    </div>
+                  </li>
+                </template>
+                <li class="load-more">
+                  <span v-if="noMore" class="uk-text-small">Hello, world.</span>
+                  <button v-if="!noMore && !isLoadingMore" @click="loadMore" class="uk-button uk-button-text">Load more...</button>
+                  <div v-if="isLoadingMore" uk-spinner></div>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <header class="rounded uk-card uk-card-default uk-padding-small">
+                <span class="uw-title">Ranking</span>
+              </header>
+            </li>
+            <li>
+              <header class="rounded uk-card uk-card-default uk-padding-small">
+                <span class="uw-title">Scoreboard</span>
+              </header>
+            </li>
+        </ul>
+    </div>
+    <a href="scoreboard.html" class="new-game uk-icon-button uk-box-shadow-large" uk-icon="plus" uk-tooltip="Ping Pong?"></a>
+  </div>
+  <script>
+  var app = new Vue({
+    el: '#app',
+    data: {
+      isLoadingMore: false,
+      noMore: false,
+      history: [
+        {
+          type: 'set',
+          date: '2018-03-21',
+          players: ['Denis', 'Basia'],
+          scores: [[4, 11], [11, 5], [10, 11]],
+          result: [1, 2],
+          points: 4,
+          winner: 1,
+        },
+        {
+          type: 'set',
+          date: '2018-03-21',
+          players: ['Denis', 'Basia'],
+          scores: [[4, 11], [11, 5], [10, 11], [11, 5], [10, 11]],
+          result: [2, 3],
+          points: 4,
+          winner: 1,
+        },
+        {
+          type: 'game',
+          date: '2018-03-21',
+          players: ['Denis', 'Basia'],
+          scores: [4, 11],
+          result: [0, 1],
+          points: 4,
+          winner: 1,
+        },
+        {
+          type: 'game',
+          date: '2018-03-21',
+          players: ['Kang', 'Denis'],
+          scores: [8, 11],
+          result: [0, 1],
+          points: 6,
+          winner: 1,
+        },
+      ],
+    },
+    methods: {
+      ceil(points) {
+        return Math.ceil(points)
+      },
+      loadMore() {
+        this.isLoadingMore = true
+        setTimeout(() => {
+          this.isLoadingMore = false
+          this.noMore = true
+        }, 1000)
+      },
+    }
+  })
+  </script>
+
+  <!-- UIkit JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Faster+One|IBM+Plex+Mono" rel="stylesheet">
+</body>
+</html>
