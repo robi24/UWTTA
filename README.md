@@ -2,13 +2,21 @@
 
 🏓Utility Warehouse Table Tennis Association
 
+**Recently Played Games**
+
+http://chengkang.me/UWTTA/index.html
+
 **Ranking**
 
 http://chengkang.me/UWTTA/ranking.html
 
-**Recently Played Games**
+**Scoreboard**
 
-http://chengkang.me/UWTTA/index.html
+http://chengkang.me/UWTTA/scoreboard.html
+
+-----
+
+<img src="https://i.imgur.com/WdQptVW.jpg" width="600"/>
 
 -----
 
