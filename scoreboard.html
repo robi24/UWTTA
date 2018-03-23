@@ -224,7 +224,7 @@
       },
       isMatchFinished() {
         const winPoint = Math.ceil(this.numberOfSets / 2)
-        return this.result[0] === winPoint || this.result[1] === winPoint
+        return (this.result[0] === winPoint) || (this.result[1] === winPoint)
       },
       winner() {
         return this.result[0] > this.result[1] ? 0 : 1
@@ -303,11 +303,15 @@
         this.scoresList[gameIdx].splice(playerIdx, 1, this.scoresList[gameIdx][playerIdx] + 1)
       },
       decrease(gameIdx, playerIdx) {
-        if (this.scoresList[gameIdx][playerIdx] === 0) return
-        this.scoresList[gameIdx].splice(playerIdx, 1, parseInt(this.scoresList[gameIdx][playerIdx] - 1))
+        const game = this.scoresList[gameIdx]
+        if (game[playerIdx] === 0) return
+        const otherPlayerIdx = playerIdx === 0 ? 1 : 0
+        const isOtherPlayerWinning = (game[otherPlayerIdx] > game[playerIdx]) && this.isGameFinished(game)
+        if (isOtherPlayerWinning) return
+        this.scoresList[gameIdx].splice(playerIdx, 1, parseInt(game[playerIdx] - 1))
       },
       save() {
-        if (this.isMatchFinished) {
+        if (!this.isMatchFinished) {
           UIkit.notification({ message: 'Unfinished game!', status: 'danger' })
           return
         }
