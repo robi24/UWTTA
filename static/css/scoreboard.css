@@ -9,9 +9,6 @@ body {
   height: 100%;
   background-color: #f7f2ef;
 }
-.form {
-  margin-top: 48px;
-}
 .scores {
   font-family: 'Quantico', sans-serif;
   font-size: 24vw;
