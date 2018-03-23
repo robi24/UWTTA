@@ -1,6 +1,16 @@
 # UWTTA
 
-Coming soon...
+🏓Utility Warehouse Table Tennis Association
+
+**Ranking**
+
+http://chengkang.me/UWTTA/ranking.html
+
+**Recently Played Games**
+
+http://chengkang.me/UWTTA/index.html
+
+-----
 
 **UIKit**
 
