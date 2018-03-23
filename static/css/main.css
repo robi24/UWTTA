@@ -102,12 +102,12 @@ header {
   align-items: center;
   padding: 24px 0;
 }
-.home-link, .ranking-link {
+.first-link {
   position: fixed;
   bottom: 80px;
   right: 16px;
 }
-.scoreboard-link {
+.second-link {
   position: fixed;
   bottom: 32px;
   right: 16px;
