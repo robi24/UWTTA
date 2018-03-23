@@ -5,35 +5,325 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>UWTTA - Fight!</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" media="screen" href="static/css/scoreboard.css" />
-  <link href="https://fonts.googleapis.com/css?family=Anonymous+Pro|Geo|Julius+Sans+One|Poiret+One|Quantico|Rajdhani" rel="stylesheet">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" sizes="180x180" href="static/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="static/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="static/images/favicon-16x16.png">
+  <link rel="manifest" href="static/images/site.webmanifest">
+  <link rel="mask-icon" href="static/images/safari-pinned-tab.svg" color="#5bbad5">
+  <link rel="shortcut icon" href="static/images/favicon.ico">
+  <meta name="apple-mobile-web-app-title" content="Ping">
+  <meta name="application-name" content="Ping">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-config" content="static/images/browserconfig.xml">
+  <meta name="theme-color" content="#ffffff">
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
-  <!-- UIkit CSS -->
+  <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Faster+One|IBM+Plex+Mono|Quantico" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="static/css/main.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="static/css/scoreboard.css" />
 </head>
 <body>
-  <div class="uk-container page" id="app">
-    <div class="score">
-      <span>6</span>
-      <span>:</span>
-      <span>11</span>
-    </div>
+  <div class="uk-container page" uk-height-viewport id="app">
+    <template v-if="isStarted">
+      <div class="uk-position-relative uk-visible-toggle uk-light" uk-slideshow="finite: true">
+        <ul class="uk-slideshow-items" uk-height-viewport>
+          <li v-for="(scores, idx) in scoresList" :key="idx" class="scoreboard">
+            <div class="scores">
+              <div>
+                <span @click="win(idx, 0)">
+                  {{scores[0]}}
+                </span>
+                <span class="decrease-button" @click="decrease(idx, 0)"></span>
+              </div>
+              <span>:</span>
+              <div>
+                <span @click="win(idx, 1)">
+                  {{scores[1]}}
+                </span>
+                <span class="decrease-button" @click="decrease(idx, 1)"></span>
+              </div>
+            </div>
+          </li>
+        </ul>
+        <a class="uk-position-center-left uk-position-small green" href="#" uk-slidenav-previous uk-slideshow-item="previous"></a>
+        <a class="uk-position-center-right uk-position-small green" href="#" uk-slidenav-next uk-slideshow-item="next"></a>
+      </div>
+      <div class="players">
+        <div class="player">
+          <div class="avatar">
+            <img class="uk-border-circle" width="40" height="40" :src="player1.avatar">
+          </div>
+          <div class="info">
+            <span>{{player1.name}}</span>
+            <span class="uk-text-meta">{{player1.points}}</span>
+          </div>
+        </div>
+        <div class="player p2">
+          <div class="info">
+            <span>{{player2.name}}</span>
+            <span class="uk-text-meta">{{player2.points}}</span>
+          </div>
+          <div class="avatar">
+            <img class="uk-border-circle" width="40" height="40" :src="player2.avatar">
+          </div>
+        </div>
+      </div>
+      <div class="points-table">
+        <div class="container rounded">
+          <div
+          v-for="idx in [0, 1]"
+          :key="idx"
+          class="row"
+          :class="{ ['p'+(idx+1)]: true }"
+          >
+            <span class="fill name">
+              {{(idx === 0 ? player1 : player2).displayName}}
+            </span>
+            <div class="score-list" :style="{ width: (scoresList.length * 32) + 'px' }">
+              <span
+                v-for="(scores, gameIdx) in scoresList"
+                :key="gameIdx"
+                class="number score"
+                :class="{ even: (gameIdx % 2 == 1)}">
+                {{scores[idx]}}
+              </span>
+            </div>
+            <span class="number result">{{result[idx]}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="menu-button">
+        <a class="uk-icon-button" uk-icon="more" href="#menu-modal" uk-toggle></a>
+      </div>
+      <div id="menu-modal" class="uk-flex-top" uk-modal>
+        <div class="menu">
+          <div class="row">
+            <span class="uk-text-muted flex-1 text-align-center">Links:</span>
+            <a class="uk-button uk-button-text white flex-2" href="index.html">Recently Played</a>
+            <a class="uk-button uk-button-text white flex-2" href="ranking.html">Ranking</a>
+          </div>
+          <hr class="uk-divider-icon">
+          <div class="row">
+            <button class="uk-button uk-button-primary" :disabled="isSaved" @click="save">Save</button>
+            <button class="uk-button uk-button-default bg-white" @click="reset">Reset</button>
+          </div>
+          <button class="uk-modal-close-default" type="button" uk-close>Close</button>
+        </div>
+      </div>
+    </template>
+    <template v-else>
+      <header class="rounded uk-card uk-card-default uk-padding-small">
+        <span class="title">Scoreboard</span>
+      </header>
+      <section class="form">
+        <form>
+          <fieldset class="uk-fieldset">
+            <legend class="uk-legend">New Match</legend>
+            <div class="uk-margin">
+              <label class="uk-form-label" for="player1">Player 1</label>
+              <div class="uk-form-controls">
+                <select class="uk-select" id="player1" v-model="player1">
+                  <option :value="{}"></option>
+                  <option v-for="player in player1List" :value="player">{{player.name}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="uk-margin">
+              <label class="uk-form-label" for="player2">Player 2</label>
+              <div class="uk-form-controls">
+                <select class="uk-select" id="player2" v-model="player2">
+                  <option :value="{}"></option>
+                  <option v-for="player in player2List" :value="player">{{player.name}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="uk-margin">
+              <div class="uk-form-label">Number of sets</div>
+              <div class="uk-form-controls evenly">
+                <label><input class="uk-radio" type="radio" name="numberOfSets" value="1" v-model="numberOfSets"> 1</label>
+                <label><input class="uk-radio" type="radio" name="numberOfSets" value="3" v-model="numberOfSets"> 3</label>
+                <label><input class="uk-radio" type="radio" name="numberOfSets" value="5" v-model="numberOfSets"> 5</label>
+              </div>
+            </div>
+            <div class="uk-margin">
+              <div class="uk-form-label">Points per set</div>
+              <div class="uk-form-controls evenly">
+                <label><input class="uk-radio" type="radio" name="pointsPerSet" value="5" v-model="pointsPerSet"> 5</label>
+                <label><input class="uk-radio" type="radio" name="pointsPerSet" value="11" v-model="pointsPerSet"> 11</label>
+                <label><input class="uk-radio" type="radio" name="pointsPerSet" value="21" v-model="pointsPerSet"> 21</label>
+              </div>
+            </div>
+            <div class="uk-margin center">
+              <span class="uk-button uk-button-primary" @click="start">🏆Ready?</span>
+            </div>
+          </fieldset>
+        </form>
+      </section>
+    </template>
   </div>
   <script>
-      var app = new Vue({
-        el: '#app',
-        data() {
-          return {
-            gameNumber: 1,
+  var config = {
+    apiKey: "AIzaSyDdpakqknv9rX6kfPE9nWx92UmHrqOEQBw",
+    authDomain: "uwtta-13132.firebaseapp.com",
+    databaseURL: "https://uwtta-13132.firebaseio.com",
+    projectId: "uwtta-13132",
+    storageBucket: "uwtta-13132.appspot.com",
+    messagingSenderId: "447003587436"
+  }
+  firebase.initializeApp(config)
+  var app = new Vue({
+    el: '#app',
+    data: {
+      isStarted: false,
+      isSaved: false,
+      players: [],
+      player1: '',
+      player2: '',
+      numberOfSets: 3,
+      pointsPerSet: 11,
+      scoresList: [],
+    },
+    computed: {
+      player1List() {
+        return this.players.filter(player => player.name !== this.player2.name)
+      },
+      player2List() {
+        return this.players.filter(player => player.name !== this.player1.name)
+      },
+      result() {
+        return this.scoresList.reduce((acc, cur) => {
+          if ((cur[0] - cur[1] >= 2) && (cur[0] >= this.pointsPerSet)) {
+            acc[0] += 1
           }
-        },
+          if ((cur[1] - cur[0] >= 2) && (cur[1] >= this.pointsPerSet)) {
+            acc[1] += 1
+          }
+          return acc
+        }, [0, 0])
+      },
+      winner() {
+        return this.result[0] > this.result[1] ? 0 : 1
+      },
+      pointsAssigned() {
+        const between = (n, l, h) => (n >= l && n <= h)
+        let pointsDiff = this.player1.points - this.player2.points
+        const isExpected = this.winner === 0 && pointsDiff >= 1
+        pointsDiff = Math.abs(pointsDiff)
+        let points = 0
+        if (isExpected) {
+          if (between(pointsDiff, 1, 25)) { points = 9 }
+          if (between(pointsDiff, 26, 50)) { points = 8 }
+          if (between(pointsDiff, 51, 100)) { points = 7 }
+          if (between(pointsDiff, 101, 150)) { points = 6 }
+          if (between(pointsDiff, 151, 200)) { points = 5 }
+          if (between(pointsDiff, 201, 300)) { points = 4 }
+          if (between(pointsDiff, 301, 400)) { points = 3 }
+          if (between(pointsDiff, 401, 500)) { points = 2 }
+          if (between(pointsDiff, 501, 750)) { points = 1 }
+          if (pointsDiff > 750) { points = 0 }
+        } else {
+          if (between(pointsDiff, 0, 24)) { points = 10 }
+          if (between(pointsDiff, 24, 49)) { points = 12 }
+          if (between(pointsDiff, 49, 99)) { points = 14 }
+          if (between(pointsDiff, 100, 149)) { points = 16 }
+          if (between(pointsDiff, 150, 199)) { points = 20 }
+          if (between(pointsDiff, 200, 299)) { points = 24 }
+          if (between(pointsDiff, 300, 399)) { points = 28 }
+          if (between(pointsDiff, 400, 499)) { points = 32 }
+          if (between(pointsDiff, 500, 749)) { points = 36 }
+          if (pointsDiff > 749) { points = 40 }
+        }
+        return this.winner === 0 ? [points, -Math.ceil(points/2)] : [-Math.ceil(points/2), points]
+      },
+    },
+    created() {
+      firebase.database().ref('players').on('child_added', (snapshot) => {
+        this.players.push({
+          ...snapshot.val(),
+          _ref: `players/${snapshot.key}`,
+        })
       })
+      window.v = this
+    },
+    methods: {
+      start() {
+        if (!this.player1 || !this.player2 || !this.numberOfSets || !this.pointsPerSet) {
+          UIkit.notification({ message: 'You shall not pass!', status: 'danger' })
+          return
+        }
+        for (let i = 0; i < this.numberOfSets; i++) {
+          this.scoresList.push([0, 0])
+        }
+        this.isStarted = true
+      },
+      win(gameIdx, playerIdx) {
+        const game = this.scoresList[gameIdx]
+        const gamePoint = this.pointsPerSet - 1
+        if (game[0] >= gamePoint && game[1] >= gamePoint) {
+          if (Math.abs(game[0] - game[1]) == 2) return
+        } else if (game[0] === this.pointsPerSet || game[1] === this.pointsPerSet) {
+          return
+        }
+        this.scoresList[gameIdx].splice(playerIdx, 1, this.scoresList[gameIdx][playerIdx] + 1)
+      },
+      decrease(gameIdx, playerIdx) {
+        if (this.scoresList[gameIdx][playerIdx] === 0) return
+        this.scoresList[gameIdx].splice(playerIdx, 1, parseInt(this.scoresList[gameIdx][playerIdx] - 1))
+      },
+      save() {
+        const isFinished = (this.result[0] + this.result[1]) === parseInt(this.numberOfSets, 10)
+        if (!isFinished) {
+          UIkit.notification({ message: 'Unfinished game!', status: 'danger' })
+          return
+        }
+        Promise.all([
+          firebase.database().ref('matches').push({
+            date: (new Date).getTime(),
+            player1: {
+              _type: 'ref',
+              _ref: this.player1._ref,
+            },
+            player2: {
+              _type: 'ref',
+              _ref: this.player2._ref,
+            },
+            pointsAssigned: this.pointsAssigned,
+            pointsBeforeMatch: [
+              this.player1.points,
+              this.player2.points,
+            ],
+            scoresList: this.scoresList,
+          }),
+          firebase.database().ref(this.player1._ref).update({
+            points: this.player1.points + this.pointsAssigned[0],
+          }),
+          firebase.database().ref(this.player2._ref).update({
+            points: this.player2.points + this.pointsAssigned[1],
+          }),
+        ]).then(() => {
+          UIkit.notification({ message: 'Match Saved!', status: 'success' })
+          this.isSaved = true
+        }).catch((error) => {
+          UIkit.notification({ message: 'Failed to save match...', status: 'danger' })
+        })
+      },
+      reset() {
+        UIkit.modal(document.getElementById('menu-modal')).hide()
+        this.isStarted = false
+        this.isSaved = false
+        this.player1 = ''
+        this.player2 = ''
+        this.numberOfSets = 3
+        this.pointsPerSet = 11
+        this.scoresList = []
+      },
+    }
+  })
   </script>
-  <!-- UIkit JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js"></script>
-
-  <link href="https://fonts.googleapis.com/css?family=Faster+One|IBM+Plex+Mono" rel="stylesheet">
 </body>
 </html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>UWTTA - Ready?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" sizes="180x180" href="static/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="static/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="static/images/favicon-16x16.png">
+  <link rel="manifest" href="static/images/site.webmanifest">
+  <link rel="mask-icon" href="static/images/safari-pinned-tab.svg" color="#5bbad5">
+  <link rel="shortcut icon" href="static/images/favicon.ico">
+  <meta name="apple-mobile-web-app-title" content="Ping">
+  <meta name="application-name" content="Ping">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-config" content="static/images/browserconfig.xml">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="stylesheet" type="text/css" media="screen" href="static/css/main.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+  <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Faster+One|IBM+Plex+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.css" />
+</head>
+<body>
+  <div class="uk-container page" uk-height-viewport id="app">
+    <header class="rounded uk-card uk-card-default uk-padding-small">
+      <span class="title">Ranking</span>
+    </header>
+    <section class="ranking">
+      <template v-for="(player, idx) in rankedPlayers">
+        <p>#{{idx+1}}</p>
+        <div :key="idx" class="uk-card uk-card-default">
+          <div class="uk-card-header">
+            <div class="uk-grid-small uk-flex-middle" uk-grid>
+              <div class="uk-width-auto">
+                <img class="uk-border-circle" width="40" height="40" :src="player.avatar">
+              </div>
+              <div class="uk-width-expand">
+                <h3 class="uk-card-title uk-margin-remove-bottom">{{player.name}}</h3>
+                <p class="uk-text-meta uk-margin-remove-top">{{player.points}}</p>
+              </div>
+            </div>
+            <span class="medal">{{idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : ''))}}</span>
+          </div>
+        </div>
+      </template>
+      <div v-if="players.length === 0">
+        <div class="uk-card uk-card-default uk-card-body">
+            <p>Placeholder for future Ping Pong players.</p>
+        </div>
+      </div>
+      <div class="message" v-else>
+        <small>😉You need to practice more↑</small>
+      </div>
+    </section>
+    <a href="index.html" class="home-link uk-icon-button uk-box-shadow-large" uk-icon="calendar" uk-tooltip="How was the game?"></a>
+    <a href="scoreboard.html" class="scoreboard-link uk-icon-button uk-box-shadow-large" uk-icon="plus" uk-tooltip="Ping Pong?"></a>
+  </div>
+  <script>
+  var config = {
+    apiKey: "AIzaSyDdpakqknv9rX6kfPE9nWx92UmHrqOEQBw",
+    authDomain: "uwtta-13132.firebaseapp.com",
+    databaseURL: "https://uwtta-13132.firebaseio.com",
+    projectId: "uwtta-13132",
+    storageBucket: "uwtta-13132.appspot.com",
+    messagingSenderId: "447003587436"
+  }
+  firebase.initializeApp(config)
+  var app = new Vue({
+    el: '#app',
+    data: {
+      players: []
+    },
+    computed: {
+      rankedPlayers() {
+        return this.players.sort((a, b) => b.points - a.points)
+      },
+    },
+    created() {
+      firebase.database().ref('players').on('child_added', (snapshot) => {
+        this.players.push(snapshot.val())
+      })
+    },
+  })
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js"></script>
+</body>
+</html>
