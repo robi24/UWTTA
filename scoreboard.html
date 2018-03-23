@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-startup-image" href="static/images/launch.png">
   <link rel="apple-touch-icon" sizes="180x180" href="static/images/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="static/images/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="static/images/favicon-16x16.png">
@@ -162,6 +163,8 @@
           </fieldset>
         </form>
       </section>
+      <button class="home-link uk-icon-button uk-box-shadow-large" uk-icon="calendar" uk-tooltip="How was the game?" @click="goTo('index.html')"></button>
+      <button class="scoreboard-link uk-icon-button uk-box-shadow-large" uk-icon="plus" uk-tooltip="Ping Pong?" @click="goTo('scoreboard.html')"></button>
     </div>
   </div>
   <script>
@@ -204,6 +207,10 @@
           return acc
         }, [0, 0])
       },
+      isMatchFinished() {
+        const winPoint = Math.ceil(this.numberOfSets / 2)
+        return this.result[0] === winPoint || this.result[1] === winPoint
+      },
       winner() {
         return this.result[0] > this.result[1] ? 0 : 1
       },
@@ -245,6 +252,11 @@
       })
     },
     methods: {
+      isGameFinished(game) {
+        const p1Wins = (game[0] - game[1] >= 2) && (game[0] >= this.pointsPerSet)
+        const p2Wins = (game[1] - game[0] >= 2) && (game[1] >= this.pointsPerSet)
+        return p1Wins || p2Wins
+      },
       start() {
         if (!this.player1 || !this.player2 || !this.numberOfSets || !this.pointsPerSet) {
           UIkit.notification({ message: 'You shall not pass!', status: 'danger' })
@@ -258,9 +270,19 @@
       win(gameIdx, playerIdx) {
         const game = this.scoresList[gameIdx]
         const gamePoint = this.pointsPerSet - 1
-        if (game[0] >= gamePoint && game[1] >= gamePoint) {
-          if (Math.abs(game[0] - game[1]) == 2) return
-        } else if (game[0] === this.pointsPerSet || game[1] === this.pointsPerSet) {
+        // is match finished?
+        if (this.isMatchFinished) {
+          UIkit.notification({ message: 'Match is finished.', status: 'danger' })
+          return
+        }
+        // is previous game finished?
+        if (gameIdx > 0 && !this.isGameFinished(this.scoresList[gameIdx - 1])) {
+          UIkit.notification({ message: 'Please finish the previous game.', status: 'danger' })
+          return
+        }
+        // is game finished?
+        if (this.isGameFinished(game)) {
+          UIkit.notification({ message: 'Game is finished.', status: 'danger' })
           return
         }
         this.scoresList[gameIdx].splice(playerIdx, 1, this.scoresList[gameIdx][playerIdx] + 1)
@@ -270,8 +292,7 @@
         this.scoresList[gameIdx].splice(playerIdx, 1, parseInt(this.scoresList[gameIdx][playerIdx] - 1))
       },
       save() {
-        const isFinished = (this.result[0] + this.result[1]) === parseInt(this.numberOfSets, 10)
-        if (!isFinished) {
+        if (this.isMatchFinished) {
           UIkit.notification({ message: 'Unfinished game!', status: 'danger' })
           return
         }
@@ -321,13 +342,6 @@
       },
     }
   })
-  const links = document.getElementsByTagName('a')
-  for (let i = 0; i < links.length; i++) {
-    links[i].onclick = function() {
-      window.location = this.getAttribute('href')
-      return false
-    }
-  }
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js"></script>
