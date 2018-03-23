@@ -1,14 +1,3 @@
-* {
-  box-sizing: border-box;
-}
-body {
-  font-family: 'IBM Plex Mono', monospace;
-}
-.page {
-  max-width: 100vw;
-  height: 100%;
-  background-color: #f7f2ef;
-}
 .scores {
   font-family: 'Quantico', sans-serif;
   font-size: 24vw;
@@ -165,4 +154,10 @@ body {
   display: block;
   text-align: center;
   width: 32vw;
+}
+.uk-light .uk-slidenav:hover {
+  color: rgba(24, 180, 147, 0.8);
+}
+.uk-light .uk-slidenav:active {
+  color: rgba(24, 180, 147, 0.4);
 }

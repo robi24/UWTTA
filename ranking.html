@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -25,6 +26,7 @@
   <link href="https://fonts.googleapis.com/css?family=Faster+One|IBM+Plex+Mono" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.css" />
 </head>
+
 <body>
   <div class="uk-container page" uk-height-viewport id="app">
     <header class="rounded uk-card uk-card-default uk-padding-small">
@@ -50,7 +52,7 @@
       </template>
       <div v-if="players.length === 0">
         <div class="uk-card uk-card-default uk-card-body">
-            <p>Placeholder for future Ping Pong players.</p>
+          <p>Placeholder for future Ping Pong players.</p>
         </div>
       </div>
       <div class="message" v-else>
@@ -61,38 +63,49 @@
     <button class="second-link uk-icon-button uk-box-shadow-large" uk-icon="plus" uk-tooltip="Ping Pong?" @click="goTo('scoreboard.html')"></button>
   </div>
   <script>
-  var config = {
-    apiKey: "AIzaSyDdpakqknv9rX6kfPE9nWx92UmHrqOEQBw",
-    authDomain: "uwtta-13132.firebaseapp.com",
-    databaseURL: "https://uwtta-13132.firebaseio.com",
-    projectId: "uwtta-13132",
-    storageBucket: "uwtta-13132.appspot.com",
-    messagingSenderId: "447003587436"
-  }
-  firebase.initializeApp(config)
-  var app = new Vue({
-    el: '#app',
-    data: {
-      players: []
-    },
-    computed: {
-      rankedPlayers() {
-        return this.players.sort((a, b) => b.points - a.points)
+    // const isTesting = true
+    const isTesting = false
+    const testConfig = {
+      apiKey: "AIzaSyDdrDuBo3KamnrONVpy5osMg4266QggNMw",
+      authDomain: "uwtta-test.firebaseapp.com",
+      databaseURL: "https://uwtta-test.firebaseio.com",
+      projectId: "uwtta-test",
+      storageBucket: "",
+      messagingSenderId: "657357613283"
+    }
+    const config = {
+      apiKey: "AIzaSyDdpakqknv9rX6kfPE9nWx92UmHrqOEQBw",
+      authDomain: "uwtta-13132.firebaseapp.com",
+      databaseURL: "https://uwtta-13132.firebaseio.com",
+      projectId: "uwtta-13132",
+      storageBucket: "uwtta-13132.appspot.com",
+      messagingSenderId: "447003587436"
+    }
+    firebase.initializeApp(isTesting ? testConfig : config)
+    const app = new Vue({
+      el: '#app',
+      data: {
+        players: []
       },
-    },
-    created() {
-      firebase.database().ref('players').on('child_added', (snapshot) => {
-        this.players.push(snapshot.val())
-      })
-    },
-    methods: {
-      goTo(page) {
-        window.location = page
+      computed: {
+        rankedPlayers() {
+          return this.players.sort((a, b) => b.points - a.points)
+        },
       },
-    },
-  })
+      created() {
+        firebase.database().ref('players').on('child_added', (snapshot) => {
+          this.players.push(snapshot.val())
+        })
+      },
+      methods: {
+        goTo(page) {
+          window.location = page
+        },
+      },
+    })
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js"></script>
 </body>
+
 </html>

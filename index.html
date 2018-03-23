@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -25,40 +26,27 @@
   <link href="https://fonts.googleapis.com/css?family=Faster+One|IBM+Plex+Mono" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.css" />
 </head>
+
 <body>
   <div class="uk-container page" uk-height-viewport id="app">
     <header class="rounded uk-card uk-card-default uk-padding-small">
       <span class="title">Recently Played</span>
     </header>
     <ul class="unordered-list">
-      <template
-        v-for="(match, matchIdx) in matches"
-      >
+      <template v-for="(match, matchIdx) in matches">
         <li class="list-item date uk-text-small">{{format(match.date)}}</li>
-        <li
-          class="list-item match uk-card uk-box-shadow-medium uk-padding-remove"
-          :key="matchIdx"
-        >
-          <div
-            v-for="idx in [0, 1]"
-            :key="idx"
-            class="row"
-            :class="{ winner: match.winner === idx, ['p'+(idx+1)]: true }"
-            >
-            <span class="fill name">
-              {{match['player'+(idx+1)].displayName}}
+        <li class="list-item match uk-card uk-box-shadow-medium uk-padding-remove" :key="matchIdx">
+          <div v-for="idx in [0, 1]" :key="idx" class="row" :class="{ ['p'+(idx+1)]: true }">
+            <span class="fill name" :class="{ winner: match.winner === idx }">
+              {{match.winner === idx ? '🏆' : ''}}{{match['player'+(idx+1)].displayName}}
               <sup>{{(match.pointsAssigned[idx] > 0) ? '+' : ''}}{{match.pointsAssigned[idx]}}</sup>
             </span>
             <div class="score-list" :style="{ width: (match.scoresList.length * 32) + 'px' }">
-              <span
-                v-for="(scores, gameIdx) in match.scoresList"
-                :key="gameIdx"
-                class="number score"
-                :class="{ even: (gameIdx % 2 == 1)}">
+              <span v-for="(scores, gameIdx) in match.scoresList" :key="gameIdx" class="number score" :class="{ even: (gameIdx % 2 == 1)}">
                 {{scores[idx]}}
               </span>
             </div>
-            <span class="number result">{{match.result && match.result[idx]}}</span>
+            <span class="number result" :class="{ winner: match.winner === idx }">{{match.result && match.result[idx]}}</span>
           </div>
         </li>
       </template>
@@ -69,7 +57,7 @@
       </li> -->
       <li v-if="matches.length === 0">
         <div class="uk-card uk-card-default uk-card-body">
-            <p>Placeholder for future Ping Pong matches.</p>
+          <p>Placeholder for future Ping Pong matches.</p>
         </div>
       </li>
       <li class="message" v-else>
@@ -80,82 +68,99 @@
     <button class="second-link uk-icon-button uk-box-shadow-large" uk-icon="plus" uk-tooltip="Ping Pong?" @click="goTo('scoreboard.html')"></button>
   </div>
   <script>
-  var config = {
-    apiKey: "AIzaSyDdpakqknv9rX6kfPE9nWx92UmHrqOEQBw",
-    authDomain: "uwtta-13132.firebaseapp.com",
-    databaseURL: "https://uwtta-13132.firebaseio.com",
-    projectId: "uwtta-13132",
-    storageBucket: "uwtta-13132.appspot.com",
-    messagingSenderId: "447003587436"
-  }
-  firebase.initializeApp(config)
-  var app = new Vue({
-    el: '#app',
-    data: {
-      matches: [],
-    },
-    created() {
-      firebase.database().ref('matches').on('child_added', (snapshot) => {
-        const match = snapshot.val()
-        const result = match.scoresList.reduce((acc, cur) => {
-          if (cur[0] > cur[1]) {
-            acc[0] += 1
-          } else {
-            acc[1] += 1
-          }
-          return acc
-        }, [0, 0])
-        const winner = result[0] > result[1] ? 0 : 1
-        Object.assign(match, {
-          result,
-          winner,
+    // const isTesting = true
+    const isTesting = false
+    const testConfig = {
+      apiKey: "AIzaSyDdrDuBo3KamnrONVpy5osMg4266QggNMw",
+      authDomain: "uwtta-test.firebaseapp.com",
+      databaseURL: "https://uwtta-test.firebaseio.com",
+      projectId: "uwtta-test",
+      storageBucket: "",
+      messagingSenderId: "657357613283"
+    }
+    const config = {
+      apiKey: "AIzaSyDdpakqknv9rX6kfPE9nWx92UmHrqOEQBw",
+      authDomain: "uwtta-13132.firebaseapp.com",
+      databaseURL: "https://uwtta-13132.firebaseio.com",
+      projectId: "uwtta-13132",
+      storageBucket: "uwtta-13132.appspot.com",
+      messagingSenderId: "447003587436"
+    }
+    firebase.initializeApp(isTesting ? testConfig : config)
+    const app = new Vue({
+      el: '#app',
+      data: {
+        matches: [],
+      },
+      created() {
+        firebase.database().ref('matches').on('child_added', (snapshot) => {
+          const match = snapshot.val()
+          const result = match.scoresList.reduce((acc, cur) => {
+            if ((cur[0] - cur[1] >= 2) && (cur[0] >= match.pointsPerSet)) {
+              acc[0] += 1
+            }
+            if ((cur[1] - cur[0] >= 2) && (cur[1] >= match.pointsPerSet)) {
+              acc[1] += 1
+            }
+            return acc
+          }, [0, 0])
+          const winner = result[0] > result[1] ? 0 : 1
+          Object.assign(match, {
+            result,
+            winner,
+          })
+          this.matches.unshift(match)
+          this.loadDeepRefValue(this.matches[0])
         })
-        this.matches.unshift(match)
-        this.loadDeepRefValue(this.matches[0])
-      })
-      window.t = this
-    },
-    methods: {
-      ceil(points) {
-        return Math.ceil(points)
+        window.t = this
       },
-      // loadMore() {
-      //   this.isLoadingMore = true
-      //   setTimeout(() => {
-      //     this.isLoadingMore = false
-      //     this.noMore = true
-      //   }, 1000)
-      // },
-      format(timestamp) {
-        const d = new Date(timestamp)
-        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
+      methods: {
+        ceil(points) {
+          return Math.ceil(points)
+        },
+        // loadMore() {
+        //   this.isLoadingMore = true
+        //   setTimeout(() => {
+        //     this.isLoadingMore = false
+        //     this.noMore = true
+        //   }, 1000)
+        // },
+        format(timestamp) {
+          const d = new Date(timestamp)
+          return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
+        },
+        loadDeepRefValue(target) {
+          Object.keys(target).forEach((key) => {
+            const child = target[key]
+            if (typeof child !== 'object') return
+            const {
+              _type,
+              _ref
+            } = child
+            if (_type === 'ref') {
+              firebase.database().ref(_ref).once('value')
+                .then((snapshot) => {
+                  const val = snapshot.val()
+                  Object.assign(val, {
+                    key: snapshot.key
+                  })
+                  Vue.set(target, key, val)
+                  this.loadDeepRefValue(child)
+                })
+                .catch((error) => {
+                  console.error(error)
+                })
+            }
+          })
+        },
+        goTo(page) {
+          window.location = page
+        },
       },
-      loadDeepRefValue(target) {
-        Object.keys(target).forEach((key) => {
-          const child = target[key]
-          if (typeof child !== 'object') return
-          const { _type, _ref } = child
-          if (_type === 'ref') {
-            firebase.database().ref(_ref).once('value')
-              .then((snapshot) => {
-                const val = snapshot.val()
-                Object.assign(val, { key: snapshot.key })
-                Vue.set(target, key, val)
-                this.loadDeepRefValue(child)
-              })
-              .catch((error) => {
-                console.error(error)
-              })
-          }
-        })
-      },
-      goTo(page) {
-        window.location = page
-      },
-    },
-  })
+    })
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js"></script>
 </body>
+
 </html>
