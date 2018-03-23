@@ -102,8 +102,8 @@
         <div class="menu">
           <div class="row">
             <span class="uk-text-muted flex-1 text-align-center">Links:</span>
-            <a class="uk-button uk-button-text white flex-2" href="index.html">Recently Played</a>
-            <a class="uk-button uk-button-text white flex-2" href="ranking.html">Ranking</a>
+            <span class="uk-button uk-button-text white flex-2" @click="goTo('index.html')">Recently Played</span>
+            <span class="uk-button uk-button-text white flex-2" @click="goTo('ranking.html')">Ranking</span>
           </div>
           <hr class="uk-divider-icon">
           <div class="row">
@@ -316,6 +316,9 @@
         this.pointsPerSet = 11
         this.scoresList = []
       },
+      goTo(page) {
+        window.location = page
+      }
     }
   })
   const links = document.getElementsByTagName('a')
