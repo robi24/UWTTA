@@ -21,6 +21,7 @@
   <meta name="msapplication-config" content="static/images/browserconfig.xml">
   <meta name="theme-color" content="#ffffff">
   <link rel="stylesheet" type="text/css" media="screen" href="static/css/main.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="static/css/ranking.css" />
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Faster+One|IBM+Plex+Mono" rel="stylesheet">
@@ -35,15 +36,21 @@
     <section class="ranking">
       <template v-for="(player, idx) in rankedPlayers">
         <p>#{{idx+1}}</p>
-        <div :key="idx" class="uk-card uk-card-default">
+        <div :key="idx" class="uk-card uk-card-default" @click="goTo('player.html?' + player.name)">
           <div class="uk-card-header">
             <div class="uk-grid-small uk-flex-middle" uk-grid>
-              <div class="uk-width-auto">
-                <img class="uk-border-circle" width="40" height="40" :src="player.avatar">
+              <div class="uk-width-auto" :style="{marginLeft: (idx <= 2) ? '-15px' : '-5px'}">
+                <img class="uk-border-circle" :style="{ width: (idx <= 2) ? '60px' : '50px', height: (idx <= 2) ? '60px' : '50px' }" :src="player.avatar">
               </div>
               <div class="uk-width-expand">
-                <h3 class="uk-card-title uk-margin-remove-bottom">{{player.name}}</h3>
-                <p class="uk-text-meta uk-margin-remove-top">{{player.points}}</p>
+                <span v-if="idx <= 2 && player.title" class="uk-label" :class="{ 'gold-title': idx === 0, 'silver-title': idx === 1, 'bronze-title': idx === 2 }" style="padding: 0;">
+                    <span class="shimmer" style="padding: 0 10px;">{{player.title}}</span>
+                </span>
+                <h3 class="uk-card-title uk-margin-remove-top uk-margin-remove-bottom">{{player.name}}</h3>
+                <p class="uk-text-meta uk-margin-remove-top uk-margin-remove-bottom">{{player.points}}</p>
+                <blockquote v-if="idx <= 2 && player.words" class="uk-margin-remove-top ">
+                    <footer>{{player.words}}</footer>
+                </blockquote>
               </div>
             </div>
             <span class="medal">{{idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : ''))}}</span>

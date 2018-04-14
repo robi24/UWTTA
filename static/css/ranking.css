@@ -1,0 +1,123 @@
+.gold-title {
+  background-color: #ffd800 !important;
+}
+
+.silver-title {
+  background-color: #e4e4e4 !important;
+}
+
+.bronze-title {
+  background-color: #d56800 !important;
+}
+
+.shimmer {
+  display: inline-block;
+  color:white;
+
+  background-image: linear-gradient(135deg,rgba(255,255,255,0), #ffffff, rgba(255,255,255,0)) !important;
+
+  background-repeat: no-repeat;
+	animation-name: shimmer;
+	-moz-animation-name: shimmer;
+	-o-animation-name: shimmer; 
+	-webkit-animation-name: shimmer;
+	animation-duration: 3s;
+	-moz-animation-duration: 3s;
+	-o-animation-duration: 3s;
+	-webkit-animation-duration: 3s;
+	animation-iteration-count: infinite;
+	-o-animation-iteration-count: infinite;
+	-moz-animation-iteration-count: infinite;
+	-webkit-animation-iteration-count: infinite;
+	background-size: 8rem 100%;
+  -webkit-background-size: 8rem 100%; /*50px*/
+	animation-delay: 0.0s;
+}
+
+@keyframes shimmer {
+	0% { background-position-x: -8rem; }
+	100% { background-position-x: 16rem;}
+}
+@-moz-keyframes shimmer {
+	0% { background-position-x: -8rem; }
+	100% { background-position-x: 16rem;}
+}
+@-o-keyframes shimmer {
+	0% { background-position-x: -8rem; }
+	100% { background-position-x: 16rem;}
+}
+@-webkit-keyframes shimmer {
+    0% { background-position-x: -8rem; }
+    100% { background-position-x: 16rem;}
+}
+
+/* @-moz-keyframes shimmer {
+	0%, 10% {
+		background-position: -1000px;
+	}
+	20% {
+		background-position: top left;
+	}
+	90% {
+		background-position: top right;
+	}
+	100% {
+		background-position: 1000px;
+	}
+}
+@-webkit-keyframes shimmer {
+	0%, 10% {
+		background-position: -1000px;
+	}
+	20% {
+		background-position: top left;
+	}
+	90% {
+		background-position: top right;
+	}
+	100% {
+		background-position: 1000px;
+	}
+}
+@-o-keyframes shimmer {
+	0%, 10% {
+		background-position: -1000px;
+	}
+	20% {
+		background-position: top left;
+	}
+	90% {
+		background-position: top right;
+	}
+	100% {
+		background-position: 1000px;
+	}
+}
+@-ms-keyframes shimmer {
+	0%, 10% {
+		background-position: -1000px;
+	}
+	20% {
+		background-position: top left;
+	}
+	90% {
+		background-position: top right;
+	}
+	100% {
+		background-position: 1000px;
+	}
+}
+@keyframes shimmer {
+	0%, 10% {
+		background-position: -1000px;
+	}
+	20% {
+		background-position: top left;
+	}
+	90% {
+		background-position: top right;
+	}
+	100% {
+		background-position: 1000px;
+	}
+} */

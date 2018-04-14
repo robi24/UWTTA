@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>UWTTA - Player History.</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-startup-image" href="static/images/launch.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="static/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="static/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="static/images/favicon-16x16.png">
+  <link rel="manifest" href="static/images/site.webmanifest">
+  <link rel="mask-icon" href="static/images/safari-pinned-tab.svg" color="#5bbad5">
+  <link rel="shortcut icon" href="static/images/favicon.ico">
+  <meta name="apple-mobile-web-app-title" content="Ping">
+  <meta name="application-name" content="Ping">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-config" content="static/images/browserconfig.xml">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="stylesheet" type="text/css" media="screen" href="static/css/main.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Faster+One|IBM+Plex+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.css" />
+</head>
+
+<body>
+  <div class="uk-container page" uk-height-viewport id="app">
+    <header class="rounded uk-card uk-card-default uk-padding-small">
+      <span class="title">{{playerName}}</span>
+    </header>
+    <div class="message">
+      <small v-if="matches.length">has played {{matches.length}} match{{matches.length > 1 ? 'es' : ''}} ({{winCount}} win{{winCount > 1 ? 's' : ''}} and {{loseCount}} lose{{loseCount > 1 ? 's' : ''}}).</small>
+      <small v-else>has no match history.</small>
+    </div>
+    <ul class="unordered-list">
+      <template v-for="(match, matchIdx) in matches">
+        <li class="list-item date uk-text-small">{{format(match.date)}}</li>
+        <li class="list-item match uk-card uk-box-shadow-medium uk-padding-remove" :key="matchIdx">
+          <div v-for="idx in [0, 1]" :key="idx" class="row" :class="{ ['p'+(idx+1)]: true }">
+            <span class="fill name" :class="{ winner: match.winner === idx }">
+              {{match.winner === idx ? '🏆' : ''}}{{match['player'+(idx+1)].displayName}}
+              <sup>{{(match.pointsAssigned[idx] > 0) ? '+' : ''}}{{match.pointsAssigned[idx]}}</sup>
+            </span>
+            <div class="score-list" :style="{ width: (match.scoresList.length * 32) + 'px' }">
+              <span v-for="(scores, gameIdx) in match.scoresList" :key="gameIdx" class="number score" :class="{ even: (gameIdx % 2 == 1)}">
+                {{scores[idx]}}
+              </span>
+            </div>
+            <span class="number result" :class="{ winner: match.winner === idx }">{{match.result && match.result[idx]}}</span>
+          </div>
+        </li>
+      </template>
+      <li v-if="matches.length === 0">
+        <div class="uk-card uk-card-default uk-card-body">
+          <p>Placeholder for future Ping Pong matches.</p>
+        </div>
+      </li>
+      <li class="message" v-else>
+        <span>🏓Wanna play with {{playerName}}?</span>
+      </li>
+    </ul>
+    <button class="first-link uk-icon-button uk-box-shadow-large" uk-icon="calendar" uk-tooltip="How was the game?" @click="goTo('index.html')"></button>
+    <button class="second-link uk-icon-button uk-box-shadow-large" uk-icon="hashtag" uk-tooltip="Ranking!" @click="goTo('ranking.html')"></button>
+  </div>
+  <script>
+    const playerName = decodeURIComponent(window.location.search.slice(1))
+    // const isTesting = true
+    const isTesting = false
+    const testConfig = {
+      apiKey: "AIzaSyDdrDuBo3KamnrONVpy5osMg4266QggNMw",
+      authDomain: "uwtta-test.firebaseapp.com",
+      databaseURL: "https://uwtta-test.firebaseio.com",
+      projectId: "uwtta-test",
+      storageBucket: "",
+      messagingSenderId: "657357613283"
+    }
+    const config = {
+      apiKey: "AIzaSyDdpakqknv9rX6kfPE9nWx92UmHrqOEQBw",
+      authDomain: "uwtta-13132.firebaseapp.com",
+      databaseURL: "https://uwtta-13132.firebaseio.com",
+      projectId: "uwtta-13132",
+      storageBucket: "uwtta-13132.appspot.com",
+      messagingSenderId: "447003587436"
+    }
+    firebase.initializeApp(isTesting ? testConfig : config)
+    const app = new Vue({
+      el: '#app',
+      data: {
+        playerName: playerName,
+        player: {},
+        matches: [],
+        winCount: 0,
+      },
+      computed: {
+        loseCount() {
+          return this.matches.length - this.winCount
+        },
+      },
+      created() {
+        firebase.database().ref('players').orderByChild('name').equalTo(playerName).once('value')
+          .then((snapshot) => {
+            const playerId = Object.keys(snapshot.val())[0]
+            const player = snapshot.val()[playerId]
+            if (!player) return
+            this.player = Object.assign({}, player, { id: playerId })
+            firebase.database().ref('matches').once('value')
+              .then((snapshot) => {
+                const matches = snapshot.val() || {}
+                Object.keys(matches).forEach((key) => {
+                  const match = matches[key]
+                  if (match.player1._ref !== `players/${playerId}` && match.player2._ref !== `players/${playerId}`) return
+                  const result = match.scoresList.reduce((acc, cur) => {
+                    if ((cur[0] - cur[1] >= 2) && (cur[0] >= match.pointsPerSet)) {
+                      acc[0] += 1
+                    }
+                    if ((cur[1] - cur[0] >= 2) && (cur[1] >= match.pointsPerSet)) {
+                      acc[1] += 1
+                    }
+                    return acc
+                  }, [0, 0])
+                  const winner = result[0] > result[1] ? 0 : 1
+                  Object.assign(match, {
+                    result,
+                    winner,
+                  })
+                  if (match[`player${winner+1}`]._ref === `players/${playerId}`) {
+                    this.winCount += 1
+                  }
+                  this.matches.unshift(match)
+                  this.loadDeepRefValue(this.matches[0])
+                })
+              })
+          })
+      },
+      methods: {
+        ceil(points) {
+          return Math.ceil(points)
+        },
+        format(timestamp) {
+          const d = new Date(timestamp)
+          return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
+        },
+        loadDeepRefValue(target) {
+          Object.keys(target).forEach((key) => {
+            const child = target[key]
+            if (typeof child !== 'object') return
+            const {
+              _type,
+              _ref
+            } = child
+            if (_type === 'ref') {
+              firebase.database().ref(_ref).once('value')
+                .then((snapshot) => {
+                  const val = snapshot.val()
+                  Object.assign(val, {
+                    key: snapshot.key
+                  })
+                  Vue.set(target, key, val)
+                  this.loadDeepRefValue(child)
+                })
+                .catch((error) => {
+                  console.error(error)
+                })
+            }
+          })
+        },
+        goTo(page) {
+          window.location = page
+        },
+      },
+    })
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js"></script>
+</body>
+
+</html>
