@@ -101,7 +101,7 @@
           </div>
           <hr class="uk-divider-icon">
           <div class="row">
-            <button class="uk-button uk-button-primary" :disabled="isSaved" @click="save">Save</button>
+            <button class="uk-button uk-button-primary" :disabled="isSaved || isSaving" @click="save">Save</button>
             <button class="uk-button uk-button-default bg-white" @click="reset">Reset</button>
           </div>
           <button class="uk-modal-close-default" type="button" uk-close>Close</button>
@@ -233,6 +233,7 @@
         email: '',
         password: '',
         isStarted: false,
+        isSaving: false,
         isSaved: false,
         players: [],
         player1: {},
@@ -265,77 +266,6 @@
         },
         winner() {
           return this.isMatchFinished ? (this.result[0] > this.result[1] ? 0 : 1) : -1
-        },
-        pointsAssigned() {
-          const between = (n, l, h) => (n >= l && n <= h)
-          let pointsDiff = this.player1.points - this.player2.points
-          const isExpected = this.winner === 0 && pointsDiff >= 1
-          pointsDiff = Math.abs(pointsDiff)
-          let points = 0
-          if (isExpected) {
-            if (between(pointsDiff, 1, 25)) {
-              points = 9
-            }
-            if (between(pointsDiff, 26, 50)) {
-              points = 8
-            }
-            if (between(pointsDiff, 51, 100)) {
-              points = 7
-            }
-            if (between(pointsDiff, 101, 150)) {
-              points = 6
-            }
-            if (between(pointsDiff, 151, 200)) {
-              points = 5
-            }
-            if (between(pointsDiff, 201, 300)) {
-              points = 4
-            }
-            if (between(pointsDiff, 301, 400)) {
-              points = 3
-            }
-            if (between(pointsDiff, 401, 500)) {
-              points = 2
-            }
-            if (between(pointsDiff, 501, 750)) {
-              points = 1
-            }
-            if (pointsDiff > 750) {
-              points = 0
-            }
-          } else {
-            if (between(pointsDiff, 0, 24)) {
-              points = 10
-            }
-            if (between(pointsDiff, 24, 49)) {
-              points = 12
-            }
-            if (between(pointsDiff, 49, 99)) {
-              points = 14
-            }
-            if (between(pointsDiff, 100, 149)) {
-              points = 16
-            }
-            if (between(pointsDiff, 150, 199)) {
-              points = 20
-            }
-            if (between(pointsDiff, 200, 299)) {
-              points = 24
-            }
-            if (between(pointsDiff, 300, 399)) {
-              points = 28
-            }
-            if (between(pointsDiff, 400, 499)) {
-              points = 32
-            }
-            if (between(pointsDiff, 500, 749)) {
-              points = 36
-            }
-            if (pointsDiff > 749) {
-              points = 40
-            }
-          }
-          return this.winner === 0 ? [points, -Math.ceil(points / 2)] : [-Math.ceil(points / 2), points]
         },
       },
       created() {
@@ -434,6 +364,77 @@
           if (isOtherPlayerWinning) return
           this.scoresList[gameIdx].splice(playerIdx, 1, parseInt(game[playerIdx] - 1))
         },
+        getPointsAssigned() {
+          const between = (n, l, h) => (n >= l && n <= h)
+          const _pointsDiff = this.player1.points - this.player2.points
+          const pointsDiff = Math.abs(_pointsDiff)
+          const isExpected = (this.winner === 0 && _pointsDiff >= 1) || (this.winner === 1 && pointsDiff >= 1)
+          let points = 0
+          if (isExpected) {
+            if (between(pointsDiff, 1, 25)) {
+              points = 9
+            }
+            if (between(pointsDiff, 26, 50)) {
+              points = 8
+            }
+            if (between(pointsDiff, 51, 100)) {
+              points = 7
+            }
+            if (between(pointsDiff, 101, 150)) {
+              points = 6
+            }
+            if (between(pointsDiff, 151, 200)) {
+              points = 5
+            }
+            if (between(pointsDiff, 201, 300)) {
+              points = 4
+            }
+            if (between(pointsDiff, 301, 400)) {
+              points = 3
+            }
+            if (between(pointsDiff, 401, 500)) {
+              points = 2
+            }
+            if (between(pointsDiff, 501, 750)) {
+              points = 1
+            }
+            if (pointsDiff > 750) {
+              points = 0
+            }
+          } else {
+            if (between(pointsDiff, 0, 24)) {
+              points = 10
+            }
+            if (between(pointsDiff, 24, 49)) {
+              points = 12
+            }
+            if (between(pointsDiff, 49, 99)) {
+              points = 14
+            }
+            if (between(pointsDiff, 100, 149)) {
+              points = 16
+            }
+            if (between(pointsDiff, 150, 199)) {
+              points = 20
+            }
+            if (between(pointsDiff, 200, 299)) {
+              points = 24
+            }
+            if (between(pointsDiff, 300, 399)) {
+              points = 28
+            }
+            if (between(pointsDiff, 400, 499)) {
+              points = 32
+            }
+            if (between(pointsDiff, 500, 749)) {
+              points = 36
+            }
+            if (pointsDiff > 749) {
+              points = 40
+            }
+          }
+          return this.winner === 0 ? [points, -Math.ceil(points / 2)] : [-Math.ceil(points / 2), points]
+        },
         save() {
           if (!this.isMatchFinished) {
             UIkit.notification({
@@ -442,10 +443,13 @@
             })
             return
           }
-          if (this.isSaved) return
+          if (this.isSaved || this.isSaving) return
 
-          const player1NewPoints = this.player1.points + this.pointsAssigned[0]
-          const player2NewPoints = this.player2.points + this.pointsAssigned[1]
+          this.isSaving = true
+
+          const pointsAssigned = this.getPointsAssigned()
+          const player1PointsNew = this.player1.points + pointsAssigned[0]
+          const player2PointsNew = this.player2.points + pointsAssigned[1]
           Promise.all([
             firebase.database().ref('matches').push({
               date: (new Date).getTime(),
@@ -459,7 +463,7 @@
                 _type: 'ref',
                 _ref: this.player2._ref,
               },
-              pointsAssigned: this.pointsAssigned,
+              pointsAssigned,
               pointsBeforeMatch: [
                 this.player1.points,
                 this.player2.points,
@@ -467,34 +471,36 @@
               scoresList: this.scoresList,
             }),
             firebase.database().ref(this.player1._ref).update({
-              points: player1NewPoints,
+              points: player1PointsNew,
             }),
             firebase.database().ref(this.player2._ref).update({
-              points: player2NewPoints,
+              points: player2PointsNew,
             }),
           ]).then(() => {
             this.$set(this.players[this.players.findIndex(player => player._ref === this.player1._ref)],
-              'points', player1NewPoints)
+              'points', player1PointsNew)
             this.$set(this.players[this.players.findIndex(player => player._ref === this.player2._ref)],
-              'points', player2NewPoints)
+              'points', player2PointsNew)
             UIkit.notification({
               message: 'Match Saved!',
               status: 'success',
             })
+            this.isSaving = false
             this.isSaved = true
           }).catch((error) => {
             UIkit.notification({
               message: 'Failed to save match...',
               status: 'danger',
             })
+            this.isSaving = false
           })
         },
         reset() {
           UIkit.modal(document.getElementById('menu-modal')).hide()
           this.isStarted = false
           this.isSaved = false
-          this.player1 = ''
-          this.player2 = ''
+          this.player1 = {}
+          this.player2 = {}
           this.numberOfSets = 3
           this.pointsPerSet = 11
           this.scoresList = []
