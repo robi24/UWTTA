@@ -89,6 +89,9 @@
   justify-content: center;
   align-items: center;
 }
+.menu-button > .uk-icon-button {
+  margin: 10px;
+}
 .menu {
   display: flex;
   flex-direction: column;

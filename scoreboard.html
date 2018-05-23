@@ -91,6 +91,7 @@
       </div>
       <div class="menu-button">
         <a class="uk-icon-button" uk-icon="more" href="#menu-modal" uk-toggle></a>
+        <span class="uk-icon-button" uk-icon="code" @click="swapPlayers"></span>        
       </div>
       <div id="menu-modal" class="uk-flex-top" uk-modal>
         <div class="menu">
@@ -313,6 +314,14 @@
               })
             }
           })
+        },
+        swapPlayers() {
+          [this.player1, this.player2] = [this.player2, this.player1]
+          let newScoreList = [];
+          this.scoresList.forEach(function(score) {
+            newScoreList.push([score[1], score[0]])
+          })
+          this.scoresList = newScoreList
         },
         start() {
           if (!this.player1 || !this.player2 || !this.numberOfSets || !this.pointsPerSet) {
