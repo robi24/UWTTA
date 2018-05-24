@@ -51,8 +51,8 @@
             </div>
           </li>
         </ul>
-        <a class="uk-position-center-left uk-position-small green" href="#" uk-slidenav-previous uk-slideshow-item="previous"></a>
-        <a class="uk-position-center-right uk-position-small green" href="#" uk-slidenav-next uk-slideshow-item="next"></a>
+        <a class="uk-position-center-left uk-position-small green" href="#" uk-slidenav-previous uk-slideshow-item="previous" @click="swapPlayers"></a>
+        <a class="uk-position-center-right uk-position-small green" href="#" uk-slidenav-next uk-slideshow-item="next" @click="swapPlayers"></a>
       </div>
       <div class="players">
         <div class="player">
@@ -90,8 +90,7 @@
         </div>
       </div>
       <div class="menu-button">
-        <a class="uk-icon-button" uk-icon="more" href="#menu-modal" uk-toggle></a>
-        <span class="uk-icon-button" uk-icon="code" @click="swapPlayers"></span>        
+        <a class="uk-icon-button" uk-icon="more" href="#menu-modal" uk-toggle></a>      
       </div>
       <div id="menu-modal" class="uk-flex-top" uk-modal>
         <div class="menu">
@@ -144,7 +143,7 @@
           <fieldset class="uk-fieldset">
             <legend class="uk-legend">New Match</legend>
             <div class="uk-margin">
-              <label class="uk-form-label" for="player1">Player 1</label>
+              <label class="uk-form-label" for="player1">Player on the left</label>
               <div class="uk-form-controls">
                 <select class="uk-select" id="player1" v-model="player1">
                   <option :value="{}"></option>
@@ -153,7 +152,7 @@
               </div>
             </div>
             <div class="uk-margin">
-              <label class="uk-form-label" for="player2">Player 2</label>
+              <label class="uk-form-label" for="player2">Player on the right</label>
               <div class="uk-form-controls">
                 <select class="uk-select" id="player2" v-model="player2">
                   <option :value="{}"></option>
